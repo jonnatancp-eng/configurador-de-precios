@@ -867,6 +867,19 @@
             `).join('');
         }
 
+        // Función para limpiar emojis y caracteres especiales para el PDF
+        function cleanTextForPDF(text) {
+            return text
+                .replace(/[\u{1F600}-\u{1F64F}]/gu, '') // Emoticones
+                .replace(/[\u{1F300}-\u{1F5FF}]/gu, '') // Símbolos y pictogramas
+                .replace(/[\u{1F680}-\u{1F6FF}]/gu, '') // Transporte y mapas
+                .replace(/[\u{1F1E0}-\u{1F1FF}]/gu, '') // Banderas
+                .replace(/[\u{2600}-\u{26FF}]/gu, '')   // Símbolos varios
+                .replace(/[\u{2700}-\u{27BF}]/gu, '')   // Dingbats
+                .replace(/📋|🛠️|📌|✅|🚀|📧|🏥|🏫|🏠|⚖️|📈|💰|🔐|✏️|🔄|📊/gu, '')
+                .trim();
+        }
+
         function generateProposal() {
             if (!proposalData || proposalData.totalSetup === 0) {
                 showToast('❌ Selecciona servicios primero');
@@ -1078,12 +1091,15 @@
                     y = 50;
                 }
                 
+                // Limpiar nombre del servicio para PDF
+                const cleanName = cleanTextForPDF(item.name);
+                
                 doc.setDrawColor(0, 212, 255);
                 doc.setLineWidth(1);
                 doc.rect(40, y - 15, 532, 50);
                 
                 doc.setFont('helvetica', 'bold');
-                doc.text(item.name, 50, y);
+                doc.text(cleanName, 50, y);
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(9);
                 doc.setTextColor(100, 100, 100);
@@ -1100,20 +1116,20 @@
             
             y += 20;
             doc.setFillColor(240, 240, 240);
-            doc.rect(40, y, 532, 160, 'F');
+            doc.rect(40, y, 532, 150, 'F');
             
             doc.setTextColor(...brandCyan);
             doc.setFontSize(14);
             doc.setFont('helvetica', 'bold');
             doc.text('Condiciones Comerciales', 50, y + 25);
             
-            // Condiciones con espaciado pero sin bullets
-            doc.setFontSize(10);
+            // Condiciones con fuente más pequeña (9pt) y espaciado
+            doc.setFontSize(9);
             doc.setTextColor(60, 60, 60);
             doc.setFont('helvetica', 'normal');
             
             let condY = y + 50;
-            const lineHeight = 20;
+            const lineHeight = 18;
             
             if (proposalData.discounts.upfront) {
                 doc.text('Pago inicial: 100% para iniciar proyecto (aplica descuento del 10%)', 60, condY);
@@ -1157,7 +1173,7 @@
             doc.text('Garantías IA Agency', 40, y);
             
             y += 25;
-            doc.setFontSize(10);
+            doc.setFontSize(9);
             doc.setTextColor(60, 60, 60);
             doc.setFont('helvetica', 'normal');
             
@@ -1174,7 +1190,7 @@
                     doc.addPage();
                     y = 50;
                 }
-                doc.text('• ' + g, 40, y);
+                doc.text('- ' + g, 40, y);
                 y += lineHeight;
             });
             
@@ -1190,10 +1206,10 @@
             doc.setTextColor(255, 255, 255);
             doc.setFontSize(14);
             doc.setFont('helvetica', 'bold');
-            doc.text('¿Listo para transformar tu negocio?', 306, y + 30, { align: 'center' });
+            doc.text('Listo para transformar tu negocio?', 306, y + 30, { align: 'center' });
             doc.setFontSize(10);
             doc.setFont('helvetica', 'normal');
-            doc.text('Contáctanos para agendar el kickoff de tu proyecto', 306, y + 50, { align: 'center' });
+            doc.text('Contactanos para agendar el kickoff de tu proyecto', 306, y + 50, { align: 'center' });
             doc.setFont('helvetica', 'bold');
             doc.text('hola@iaagency.com', 306, y + 70, { align: 'center' });
             

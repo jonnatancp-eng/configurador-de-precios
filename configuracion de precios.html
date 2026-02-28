@@ -735,9 +735,6 @@
                 </div>
             </div>
 
-            <div class="instructions-box" id="instructionsBox" style="display: none;">
-            </div>
-
             <div class="preview-section" id="previewContent"></div>
             
             <div style="display: flex; gap: 10px; margin-top: 20px;" id="modalActions">
@@ -1059,18 +1056,10 @@
             return html;
         }
 
-        function updatePreview(format) {
-            currentExportFormat = format;
-            const previewHTML = generateHTMLContent(format);
-            document.getElementById('previewContent').innerHTML = previewHTML;
-            
-            // Mostrar/ocultar instrucciones según formato
-            const instructions = document.getElementById('instructionsBox');
-            if (format === 'docs') {
-                instructions.style.display = 'block';
-            } else {
-                instructions.style.display = 'none';
-            }
+            function updatePreview(format) {
+                currentExportFormat = format;
+                const previewHTML = generateHTMLContent(format);
+                document.getElementById('previewContent').innerHTML = previewHTML;
         }
 
         function exportToGoogleDocs() {
@@ -1116,11 +1105,6 @@
                 await navigator.clipboard.writeText(textContent);
                 showToast('✅ Copiado como texto. Pega en Google Docs.');
             }
-        }
-
-        function copyRichText() {
-            updatePreview('docs');
-            setTimeout(() => copyToClipboard(), 100);
         }
 
         async function downloadPDF() {

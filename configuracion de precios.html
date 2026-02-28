@@ -328,10 +328,10 @@
                                 <div class="package-price" data-setup="3200" onclick="editPrice(event, this, 'setup')">$3,200</div>
                                 <div class="package-monthly" data-monthly="175" onclick="editPrice(event, this, 'monthly')">+$175/mes</div>
                                 <ul class="package-features">
-                                    <li>Landing Page Express</li>
+                                    <li>Sitio Web 5 pages</li>
                                     <li>Chatbot Web Básico</li>
                                     <li>Automatización Agendamiento</li>
-                                    <li>Integración Calendar</li>
+                                    <li>10 Flujos</li>
                                 </ul>
                             </div>
 
@@ -673,11 +673,11 @@
                         <div class="discount-options">
                             <label class="discount-option">
                                 <input type="checkbox" id="discount-upfront" onchange="calculateTotal()">
-                                <span>Pago 100% anticipado (-10%)</span>
+                                <span>Pago 100% anticipado (-7%)</span>
                             </label>
                             <label class="discount-option">
                                 <input type="checkbox" id="discount-annual" onchange="calculateTotal()">
-                                <span>Contrato 12 meses (-15% setup)</span>
+                                <span>Contrato 12 meses (-8% setup)</span>
                             </label>
                             <label class="discount-option">
                                 <input type="checkbox" id="discount-return" onchange="calculateTotal()">
@@ -885,10 +885,10 @@
             };
             
             let discount = 0;
-            if (discounts.upfront) discount += setupTotal * 0.10;
-            if (discounts.annual) discount += setupTotal * 0.15;
-            if (discounts.return) discount += setupTotal * 0.15;
-            discount = Math.min(discount, setupTotal * 0.30);
+            if (discounts.upfront) discount += setupTotal * 0.08;
+            if (discounts.annual) discount += setupTotal * 0.07;
+            if (discounts.return) discount += setupTotal * 0.10;
+            discount = Math.min(discount, setupTotal * 0.20);
             
             const finalSetup = setupTotal - discount;
             

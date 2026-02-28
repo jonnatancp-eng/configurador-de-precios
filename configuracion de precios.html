@@ -193,28 +193,62 @@
         .selected-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: rgba(0, 212, 255, 0.1); border-radius: 6px; margin-bottom: 6px; font-size: 0.85rem; }
         
         .action-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
-        .btn { padding: 14px 24px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.3s; font-size: 1rem; text-align: center; }
+        .btn { padding: 14px 24px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.3s; font-size: 1rem; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-primary { background: linear-gradient(135deg, var(--cyan), var(--purple)); color: white; }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0, 212, 255, 0.3); }
         .btn-secondary { background: transparent; border: 2px solid var(--border); color: var(--text-primary); }
         .btn-secondary:hover { border-color: var(--cyan); color: var(--cyan); }
         .btn-warning { background: var(--orange); color: white; }
         .btn-warning:hover { background: #d97706; }
+        .btn-success { background: var(--green); color: white; }
+        .btn-success:hover { background: #059669; }
         
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
         .modal.active { display: flex; }
-        .modal-content { background: var(--bg-card); border-radius: 16px; max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 30px; border: 2px solid var(--cyan); }
+        .modal-content { background: var(--bg-card); border-radius: 16px; max-width: 900px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 30px; border: 2px solid var(--cyan); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .modal-title { font-size: 1.5rem; font-weight: 700; }
         .close-modal { background: none; border: none; color: var(--text-secondary); font-size: 1.5rem; cursor: pointer; }
         
+        .export-options { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .export-option { 
+            padding: 20px; 
+            background: var(--bg-hover); 
+            border: 2px solid var(--border); 
+            border-radius: 12px; 
+            cursor: pointer; 
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .export-option:hover { border-color: var(--cyan); background: rgba(0, 212, 255, 0.1); }
+        .export-option.recommended { border-color: var(--green); position: relative; }
+        .export-option.recommended::before {
+            content: "RECOMENDADO"; 
+            position: absolute; 
+            top: -10px; 
+            left: 50%; 
+            transform: translateX(-50%);
+            background: var(--green); 
+            color: white; 
+            padding: 2px 12px; 
+            font-size: 0.7rem; 
+            border-radius: 10px;
+            font-weight: bold;
+        }
+        .export-icon { font-size: 2rem; margin-bottom: 10px; }
+        .export-title { font-weight: 700; margin-bottom: 5px; color: var(--text-primary); }
+        .export-desc { font-size: 0.85rem; color: var(--text-secondary); }
+        
         .preview-section {
-            background: var(--bg-hover);
-            padding: 20px;
+            background: white;
+            color: #333;
+            padding: 30px;
             border-radius: 12px;
             margin-top: 20px;
-            max-height: 400px;
+            max-height: 500px;
             overflow-y: auto;
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
         }
         
         .toast {
@@ -235,6 +269,17 @@
             from { transform: translateX(400px); }
             to { transform: translateX(0); }
         }
+
+        .instructions-box {
+            background: rgba(0, 212, 255, 0.1);
+            border-left: 4px solid var(--cyan);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.9rem;
+        }
+        .instructions-box ol { margin-left: 20px; }
+        .instructions-box li { margin-bottom: 8px; }
     </style>
 </head>
 <body>
@@ -662,7 +707,7 @@
                     </div>
 
                     <div class="action-buttons">
-                        <button class="btn btn-primary" onclick="generateProposal()">📄 Generar Propuesta PDF</button>
+                        <button class="btn btn-primary" onclick="generateProposal()">📄 Generar Propuesta</button>
                         <button class="btn btn-secondary" onclick="resetAll()">🔄 Limpiar Todo</button>
                     </div>
                 </div>
@@ -671,14 +716,39 @@
     </div>
 
     <div class="modal" id="proposalModal">
-        <div class="modal-content" style="max-width: 800px;">
+        <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">Vista Previa de Propuesta</div>
+                <div class="modal-title">🚀 Exportar Propuesta Comercial</div>
                 <button class="close-modal" onclick="closeModal()">&times;</button>
             </div>
+            
+            <div class="export-options">
+                <div class="export-option recommended" onclick="exportToGoogleDocs()">
+                    <div class="export-icon">📝</div>
+                    <div class="export-title">Google Docs</div>
+                    <div class="export-desc">Copia al portapapeles y pega en Google Docs. Preserva emojis y formato perfectamente.</div>
+                </div>
+                <div class="export-option" onclick="downloadHTML()">
+                    <div class="export-icon">🌐</div>
+                    <div class="export-title">Archivo HTML</div>
+                    <div class="export-desc">Descarga como archivo .html. Ábrelo en navegador o impórtalo a Google Docs.</div>
+                </div>
+                <div class="export-option" onclick="downloadPDF()">
+                    <div class="export-icon">📄</div>
+                    <div class="export-title">PDF Básico</div>
+                    <div class="export-desc">PDF sin emojis (símbolos de texto en su lugar). Útil para archivar.</div>
+                </div>
+                <div class="export-option" onclick="copyRichText()">
+                    <div class="export-icon">📋</div>
+                    <div class="export-title">Copiar Todo</div>
+                    <div class="export-desc">Copia el contenido formateado al portapapeles para pegar donde necesites.</div>
+                </div>
+            </div>
+
             <div class="preview-section" id="previewContent"></div>
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button class="btn btn-primary" onclick="downloadPDF()" style="flex: 1;">📥 Descargar PDF</button>
+            
+            <div style="display: flex; gap: 10px; margin-top: 20px;" id="modalActions">
+                <button class="btn btn-success" onclick="copyToClipboard()" style="flex: 1;">📋 Copiar al Portapapeles</button>
                 <button class="btn btn-secondary" onclick="closeModal()" style="flex: 1;">Cerrar</button>
             </div>
         </div>
@@ -692,6 +762,7 @@
         let adminMode = false;
         let proposalData = null;
         const originalPrices = {};
+        let currentExportFormat = 'docs';
         
         document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('[data-setup], [data-monthly]').forEach(el => {
@@ -867,19 +938,6 @@
             `).join('');
         }
 
-        // Función para limpiar emojis y caracteres especiales para el PDF
-        function cleanTextForPDF(text) {
-            return text
-                .replace(/[\u{1F600}-\u{1F64F}]/gu, '') // Emoticones
-                .replace(/[\u{1F300}-\u{1F5FF}]/gu, '') // Símbolos y pictogramas
-                .replace(/[\u{1F680}-\u{1F6FF}]/gu, '') // Transporte y mapas
-                .replace(/[\u{1F1E0}-\u{1F1FF}]/gu, '') // Banderas
-                .replace(/[\u{2600}-\u{26FF}]/gu, '')   // Símbolos varios
-                .replace(/[\u{2700}-\u{27BF}]/gu, '')   // Dingbats
-                .replace(/📋|🛠️|📌|✅|🚀|📧|🏥|🏫|🏠|⚖️|📈|💰|🔐|✏️|🔄|📊/gu, '')
-                .trim();
-        }
-
         function generateProposal() {
             if (!proposalData || proposalData.totalSetup === 0) {
                 showToast('❌ Selecciona servicios primero');
@@ -889,64 +947,75 @@
             const clientName = prompt('Nombre del cliente:') || 'Cliente';
             const companyName = prompt('Nombre de la empresa:') || 'Su Empresa';
             
-            const conditions = generateDynamicConditions(proposalData.discounts);
+            proposalData.clientName = clientName;
+            proposalData.companyName = companyName;
             
-            const previewHTML = `
-                <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
-                    <div style="text-align: center; margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #00d4ff, #8b5cf6); color: white; border-radius: 12px;">
-                        <h1 style="margin: 0; font-size: 28px;">IA AGENCY</h1>
-                        <p style="margin: 10px 0 0 0; opacity: 0.9;">Propuesta Comercial</p>
+            updatePreview('docs');
+            document.getElementById('proposalModal').classList.add('active');
+        }
+
+        function generateHTMLContent(format = 'docs') {
+            const conditions = generateDynamicConditions(proposalData.discounts, format);
+            const emoji = (e) => format === 'pdf' ? '' : e; // Sin emojis para PDF
+            
+            return `
+                <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6; max-width: 800px; margin: 0 auto;">
+                    <div style="text-align: center; margin-bottom: 30px; padding: 30px; background: linear-gradient(135deg, #00d4ff, #8b5cf6); color: white; border-radius: 12px;">
+                        <h1 style="margin: 0; font-size: 32px; font-weight: bold;">${emoji('🚀')} IA AGENCY</h1>
+                        <p style="margin: 10px 0 0 0; opacity: 0.9; font-size: 18px;">Propuesta Comercial</p>
                     </div>
                     
-                    <div style="margin-bottom: 25px;">
-                        <p><strong>Fecha:</strong> ${proposalData.date}</p>
-                        <p><strong>Cliente:</strong> ${clientName}</p>
-                        <p><strong>Empresa:</strong> ${companyName}</p>
-                        <p><strong>Válida por:</strong> 30 días</p>
+                    <div style="margin-bottom: 25px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+                        <p style="margin: 5px 0;"><strong>${emoji('📅')} Fecha:</strong> ${proposalData.date}</p>
+                        <p style="margin: 5px 0;"><strong>${emoji('👤')} Cliente:</strong> ${proposalData.clientName}</p>
+                        <p style="margin: 5px 0;"><strong>${emoji('🏢')} Empresa:</strong> ${proposalData.companyName}</p>
+                        <p style="margin: 5px 0;"><strong>${emoji('⏱️')} Válida por:</strong> 30 días</p>
                     </div>
                     
-                    <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
-                        <h3 style="color: #00d4ff; margin-top: 0;">📋 Resumen de Inversión</h3>
-                        <table style="width: 100%; border-collapse: collapse;">
+                    <div style="background: #f0f9ff; padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid #00d4ff;">
+                        <h3 style="color: #00d4ff; margin-top: 0; font-size: 20px;">${emoji('💰')} Resumen de Inversión</h3>
+                        <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
                             <tr>
-                                <td style="padding: 8px 0; border-bottom: 1px solid #ddd;">Subtotal Setup:</td>
-                                <td style="text-align: right; font-weight: bold;">$${proposalData.subtotalSetup.toLocaleString()}</td>
+                                <td style="padding: 10px 0; border-bottom: 1px solid #ddd; font-size: 16px;">Subtotal Setup:</td>
+                                <td style="text-align: right; font-weight: bold; font-size: 16px; border-bottom: 1px solid #ddd;">$${proposalData.subtotalSetup.toLocaleString()}</td>
                             </tr>
                             <tr>
-                                <td style="padding: 8px 0; border-bottom: 1px solid #ddd;">Descuento aplicado:</td>
-                                <td style="text-align: right; color: #f59e0b; font-weight: bold;">-$${Math.round(proposalData.discount).toLocaleString()}</td>
+                                <td style="padding: 10px 0; border-bottom: 1px solid #ddd; font-size: 16px;">Descuento aplicado:</td>
+                                <td style="text-align: right; color: #f59e0b; font-weight: bold; font-size: 16px; border-bottom: 1px solid #ddd;">-$${Math.round(proposalData.discount).toLocaleString()}</td>
                             </tr>
-                            <tr style="font-size: 18px; color: #00d4ff;">
-                                <td style="padding: 12px 0 8px 0; border-top: 2px solid #00d4ff; font-weight: bold;">TOTAL SETUP:</td>
-                                <td style="text-align: right; border-top: 2px solid #00d4ff; font-weight: bold;">$${Math.round(proposalData.totalSetup).toLocaleString()}</td>
+                            <tr style="font-size: 20px; color: #00d4ff;">
+                                <td style="padding: 15px 0 10px 0; border-top: 3px solid #00d4ff; font-weight: bold;">TOTAL SETUP:</td>
+                                <td style="text-align: right; border-top: 3px solid #00d4ff; font-weight: bold;">$${Math.round(proposalData.totalSetup).toLocaleString()}</td>
                             </tr>
-                            <tr style="color: #10b981; font-weight: bold;">
-                                <td style="padding: 8px 0;">TOTAL MENSUAL:</td>
+                            <tr style="color: #10b981; font-weight: bold; font-size: 18px;">
+                                <td style="padding: 10px 0 0 0;">TOTAL MENSUAL:</td>
                                 <td style="text-align: right;">$${proposalData.subtotalMonthly.toLocaleString()}/mes</td>
                             </tr>
                         </table>
                     </div>
                     
                     <div style="margin-bottom: 25px;">
-                        <h3 style="color: #00d4ff;">🛠️ Servicios Incluidos</h3>
-                        <ul style="list-style: none; padding: 0;">
+                        <h3 style="color: #00d4ff; font-size: 20px; margin-bottom: 15px;">${emoji('🛠️')} Servicios Incluidos</h3>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
                             ${proposalData.items.map(item => `
-                                <li style="padding: 10px; background: white; margin-bottom: 8px; border-radius: 6px; border-left: 4px solid #00d4ff;">
-                                    <strong>${item.name}</strong><br>
-                                    <span style="color: #666; font-size: 14px;">Setup: $${item.setup.toLocaleString()} | Mensual: $${item.monthly.toLocaleString()}</span>
-                                </li>
+                                <div style="padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #00d4ff;">
+                                    <div style="font-weight: bold; font-size: 16px; margin-bottom: 5px; color: #111;">${item.name}</div>
+                                    <div style="color: #666; font-size: 14px;">Setup: $${item.setup.toLocaleString()} | Mensual: $${item.monthly.toLocaleString()}</div>
+                                </div>
                             `).join('')}
-                        </ul>
+                        </div>
                     </div>
                     
-                    <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
-                        <h3 style="color: #00d4ff; margin-top: 0;">📌 Condiciones Comerciales</h3>
-                        ${conditions}
+                    <div style="background: #fef3c7; padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid #f59e0b;">
+                        <h3 style="color: #d97706; margin-top: 0; font-size: 20px;">${emoji('📋')} Condiciones Comerciales</h3>
+                        <div style="color: #92400e; line-height: 1.8;">
+                            ${conditions}
+                        </div>
                     </div>
                     
                     <div style="margin-bottom: 25px;">
-                        <h3 style="color: #00d4ff;">✅ Garantías IA Agency</h3>
-                        <ul style="line-height: 2;">
+                        <h3 style="color: #00d4ff; font-size: 20px; margin-bottom: 15px;">${emoji('✅')} Garantías IA Agency</h3>
+                        <ul style="line-height: 2; padding-left: 20px; color: #374151;">
                             <li>30 días de soporte post-lanzamiento sin costo adicional</li>
                             <li>90 días de optimización de chatbot ilimitada</li>
                             <li>Uptime garantizado 99.9% con SLA</li>
@@ -955,275 +1024,334 @@
                         </ul>
                     </div>
                     
-                    <div style="background: linear-gradient(135deg, #00d4ff, #8b5cf6); color: white; padding: 20px; border-radius: 8px; text-align: center;">
-                        <h3 style="margin-top: 0;">🚀 ¿Listo para transformar tu negocio?</h3>
-                        <p>Contáctanos para agendar el kickoff de tu proyecto</p>
-                        <p style="margin: 10px 0;"><strong>📧 hola@iaagency.com</strong></p>
-                        <p style="margin: 0; font-size: 14px; opacity: 0.9;">IA Agency - Automatización Inteligente para Negocios</p>
+                    <div style="background: linear-gradient(135deg, #00d4ff, #8b5cf6); color: white; padding: 30px; border-radius: 12px; text-align: center; margin-top: 30px;">
+                        <h3 style="margin-top: 0; font-size: 22px; margin-bottom: 10px;">${emoji('🎯')} ¿Listo para transformar tu negocio?</h3>
+                        <p style="margin: 0 0 15px 0; font-size: 16px; opacity: 0.95;">Contáctanos para agendar el kickoff de tu proyecto</p>
+                        <p style="margin: 0; font-size: 18px; font-weight: bold;">${emoji('📧')} hola@iaagency.com</p>
+                        <p style="margin: 15px 0 0 0; font-size: 14px; opacity: 0.9;">IA Agency - Automatización Inteligente para Negocios</p>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #9ca3af; font-size: 12px;">
+                        <p>Propuesta generada el ${proposalData.date} | Válida por 30 días</p>
                     </div>
                 </div>
             `;
-            
-            document.getElementById('previewContent').innerHTML = previewHTML;
-            document.getElementById('proposalModal').classList.add('active');
-            
-            proposalData.clientName = clientName;
-            proposalData.companyName = companyName;
-            proposalData.conditions = conditions;
         }
 
-        function generateDynamicConditions(discounts) {
-            let html = '<div style="line-height: 1.8;">';
+        function generateDynamicConditions(discounts, format = 'docs') {
+            const emoji = (e) => format === 'pdf' ? '' : e;
+            let html = '';
             
             if (discounts.upfront) {
-                html += '<p style="margin: 0 0 8px 0;"><strong>Pago inicial:</strong> 100% para iniciar proyecto (aplica descuento del 10%)</p>';
+                html += `<p style="margin: 8px 0;"><strong>${emoji('💳')} Pago inicial:</strong> 100% para iniciar proyecto (aplica descuento del 10%)</p>`;
             } else {
-                html += '<p style="margin: 0 0 8px 0;"><strong>Pago inicial:</strong> 40% para iniciar proyecto</p>';
-                html += '<p style="margin: 0 0 8px 0;"><strong>Hitos de pago:</strong> 30% diseño aprobado, 20% testing, 10% lanzamiento</p>';
+                html += `<p style="margin: 8px 0;"><strong>${emoji('💳')} Pago inicial:</strong> 40% para iniciar proyecto</p>`;
+                html += `<p style="margin: 8px 0;"><strong>${emoji('📊')} Hitos de pago:</strong> 30% diseño aprobado, 20% testing, 10% lanzamiento</p>`;
             }
             
             if (discounts.annual) {
-                html += '<p style="margin: 0 0 8px 0;"><strong>Contrato mínimo:</strong> 12 meses (aplica descuento del 15% en setup)</p>';
-                html += '<p style="margin: 0 0 8px 0;"><strong>Mantenimiento:</strong> Incluido en el contrato anual</p>';
+                html += `<p style="margin: 8px 0;"><strong>${emoji('📅')} Contrato mínimo:</strong> 12 meses (aplica descuento del 15% en setup)</p>`;
+                html += `<p style="margin: 8px 0;"><strong>${emoji('🔧')} Mantenimiento:</strong> Incluido en el contrato anual</p>`;
             } else {
-                html += '<p style="margin: 0 0 8px 0;"><strong>Contrato mínimo:</strong> 6 meses de mantenimiento</p>';
+                html += `<p style="margin: 8px 0;"><strong>${emoji('📅')} Contrato mínimo:</strong> 6 meses de mantenimiento</p>`;
             }
             
             if (discounts.return) {
-                html += '<p style="margin: 0 0 8px 0;"><strong>Beneficio adicional:</strong> Cliente recurrente (-15% aplicado)</p>';
+                html += `<p style="margin: 8px 0;"><strong>${emoji('⭐')} Beneficio adicional:</strong> Cliente recurrente (-15% aplicado)</p>`;
             }
             
-            html += '<p style="margin: 0 0 8px 0;"><strong>Tiempo estimado de entrega:</strong> 4-6 semanas hábiles</p>';
-            html += '<p style="margin: 0;"><strong>Forma de pago:</strong> Transferencia bancaria o tarjeta de crédito</p>';
-            html += '</div>';
+            html += `<p style="margin: 8px 0;"><strong>${emoji('⏱️')} Tiempo estimado de entrega:</strong> 4-6 semanas hábiles</p>`;
+            html += `<p style="margin: 8px 0;"><strong>${emoji('💰')} Forma de pago:</strong> Transferencia bancaria o tarjeta de crédito</p>`;
             
             return html;
         }
 
+        function updatePreview(format) {
+            currentExportFormat = format;
+            const previewHTML = generateHTMLContent(format);
+            document.getElementById('previewContent').innerHTML = previewHTML;
+            
+            // Mostrar/ocultar instrucciones según formato
+            const instructions = document.getElementById('instructionsBox');
+            if (format === 'docs') {
+                instructions.style.display = 'block';
+            } else {
+                instructions.style.display = 'none';
+            }
+        }
+
+        function exportToGoogleDocs() {
+            document.querySelectorAll('.export-option').forEach(el => el.classList.remove('recommended'));
+            event.currentTarget.classList.add('recommended');
+            updatePreview('docs');
+            showToast('📝 Modo Google Docs activado. Copia y pega en Docs.');
+        }
+
+        function downloadHTML() {
+            const htmlContent = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Propuesta IA Agency - ${proposalData.clientName}</title>
+</head>
+<body style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px;">
+    ${generateHTMLContent('docs')}
+</body>
+</html>`;
+            
+            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Propuesta_IA_Agency_${proposalData.clientName.replace(/\s+/g, '_')}.html`;
+            link.click();
+            showToast('✅ Archivo HTML descargado');
+        }
+
+        async function copyToClipboard() {
+            const content = document.getElementById('previewContent').innerHTML;
+            
+            try {
+                // Crear un blob HTML para copiar con formato
+                const blob = new Blob([content], { type: 'text/html' });
+                const clipboardItem = new ClipboardItem({ 'text/html': blob });
+                await navigator.clipboard.write([clipboardItem]);
+                showToast('✅ Copiado al portapapeles. Pega en Google Docs (Ctrl+V)');
+            } catch (err) {
+                // Fallback: copiar como texto plano
+                const textContent = document.getElementById('previewContent').innerText;
+                await navigator.clipboard.writeText(textContent);
+                showToast('✅ Copiado como texto. Pega en Google Docs.');
+            }
+        }
+
+        function copyRichText() {
+            updatePreview('docs');
+            setTimeout(() => copyToClipboard(), 100);
+        }
+
         async function downloadPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('p', 'pt', 'letter');
+            updatePreview('pdf');
             
-            const brandCyan = [0, 212, 255];
-            const brandPurple = [139, 92, 246];
-            
-            // Header
-            doc.setFillColor(...brandCyan);
-            doc.rect(0, 0, 612, 100, 'F');
-            
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(32);
-            doc.setFont('helvetica', 'bold');
-            doc.text('IA AGENCY', 306, 50, { align: 'center' });
-            doc.setFontSize(14);
-            doc.text('Propuesta Comercial', 306, 75, { align: 'center' });
-            
-            // Info cliente
-            doc.setTextColor(60, 60, 60);
-            doc.setFontSize(11);
-            let y = 130;
-            doc.text(`Fecha: ${proposalData.date}`, 40, y);
-            y += 20;
-            doc.text(`Cliente: ${proposalData.clientName}`, 40, y);
-            y += 20;
-            doc.text(`Empresa: ${proposalData.companyName}`, 40, y);
-            y += 20;
-            doc.text('Válida por: 30 días', 40, y);
-            
-            // Tabla resumen
-            y += 40;
-            doc.setFillColor(240, 240, 240);
-            doc.rect(40, y, 532, 125, 'F');
-            
-            doc.setFontSize(14);
-            doc.setTextColor(...brandCyan);
-            doc.text('Resumen de Inversión', 50, y + 25);
-            
-            doc.setFontSize(11);
-            doc.setTextColor(60, 60, 60);
-            doc.setFont('helvetica', 'normal');
-            
-            const col1 = 50;
-            const col2 = 450;
-            
-            y += 50;
-            doc.text('Subtotal Setup:', col1, y);
-            doc.text(`$${proposalData.subtotalSetup.toLocaleString()}`, col2, y);
-            
-            y += 20;
-            doc.text('Descuento aplicado:', col1, y);
-            doc.setTextColor(245, 158, 11);
-            doc.text(`-$${Math.round(proposalData.discount).toLocaleString()}`, col2, y);
-            
-            // Línea separadora (subida)
-            y += 25;
-            doc.setDrawColor(...brandCyan);
-            doc.setLineWidth(2);
-            doc.line(50, y, 550, y);
-            
-            // TOTAL SETUP (más cerca de la línea)
-            y += 20;
-            doc.setTextColor(...brandCyan);
-            doc.setFont('helvetica', 'bold');
-            doc.text('TOTAL SETUP:', col1, y);
-            doc.text(`$${Math.round(proposalData.totalSetup).toLocaleString()}`, col2, y);
-            
-            // TOTAL MENSUAL
-            y += 20;
-            doc.setTextColor(16, 185, 129);
-            doc.text('TOTAL MENSUAL:', col1, y);
-            doc.text(`$${proposalData.subtotalMonthly.toLocaleString()}/mes`, col2, y);
-            
-            // Servicios
-            y += 50;
-            doc.setTextColor(...brandCyan);
-            doc.setFontSize(14);
-            doc.text('Servicios Incluidos', 40, y);
-            
-            y += 30;
-            doc.setFontSize(10);
-            doc.setTextColor(60, 60, 60);
-            doc.setFont('helvetica', 'normal');
-            
-            proposalData.items.forEach((item) => {
-                if (y > 720) {
-                    doc.addPage();
-                    y = 50;
-                }
+            // Pequeña espera para que se actualice la vista previa
+            setTimeout(async () => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'pt', 'letter');
                 
-                // Limpiar nombre del servicio para PDF
-                const cleanName = cleanTextForPDF(item.name);
+                const brandCyan = [0, 212, 255];
+                const brandPurple = [139, 92, 246];
                 
-                doc.setDrawColor(0, 212, 255);
-                doc.setLineWidth(1);
-                doc.rect(40, y - 15, 532, 50);
+                // Header
+                doc.setFillColor(...brandCyan);
+                doc.rect(0, 0, 612, 100, 'F');
                 
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(32);
                 doc.setFont('helvetica', 'bold');
-                doc.text(cleanName, 50, y);
-                doc.setFont('helvetica', 'normal');
-                doc.setFontSize(9);
-                doc.setTextColor(100, 100, 100);
-                doc.text(`Setup: $${item.setup.toLocaleString()} | Mensual: $${item.monthly.toLocaleString()}`, 50, y + 15);
+                doc.text('IA AGENCY', 306, 50, { align: 'center' });
+                doc.setFontSize(14);
+                doc.text('Propuesta Comercial', 306, 75, { align: 'center' });
                 
-                y += 70;
-            });
-            
-            // Condiciones
-            if (y > 650) {
-                doc.addPage();
-                y = 50;
-            }
-            
-            y += 20;
-            doc.setFillColor(240, 240, 240);
-            doc.rect(40, y, 532, 150, 'F');
-            
-            doc.setTextColor(...brandCyan);
-            doc.setFontSize(14);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Condiciones Comerciales', 50, y + 25);
-            
-            // Condiciones con fuente más pequeña (9pt) y espaciado
-            doc.setFontSize(9);
-            doc.setTextColor(60, 60, 60);
-            doc.setFont('helvetica', 'normal');
-            
-            let condY = y + 50;
-            const lineHeight = 18;
-            
-            if (proposalData.discounts.upfront) {
-                doc.text('Pago inicial: 100% para iniciar proyecto (aplica descuento del 10%)', 60, condY);
-                condY += lineHeight;
-            } else {
-                doc.text('Pago inicial: 40% para iniciar proyecto', 60, condY);
-                condY += lineHeight;
-                doc.text('Hitos de pago: 30% diseño aprobado, 20% testing, 10% lanzamiento', 60, condY);
-                condY += lineHeight;
-            }
-            
-            if (proposalData.discounts.annual) {
-                doc.text('Contrato mínimo: 12 meses (aplica descuento del 15% en setup)', 60, condY);
-                condY += lineHeight;
-                doc.text('Mantenimiento: Incluido en el contrato anual', 60, condY);
-                condY += lineHeight;
-            } else {
-                doc.text('Contrato mínimo: 6 meses de mantenimiento', 60, condY);
-                condY += lineHeight;
-            }
-            
-            if (proposalData.discounts.return) {
-                doc.text('Beneficio adicional: Cliente recurrente (-15% aplicado)', 60, condY);
-                condY += lineHeight;
-            }
-            
-            doc.text('Tiempo estimado de entrega: 4-6 semanas hábiles', 60, condY);
-            condY += lineHeight;
-            doc.text('Forma de pago: Transferencia bancaria o tarjeta de crédito', 60, condY);
-            
-            // Garantías
-            y = condY + 40;
-            if (y > 700) {
-                doc.addPage();
-                y = 50;
-            }
-            
-            doc.setTextColor(...brandCyan);
-            doc.setFontSize(14);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Garantías IA Agency', 40, y);
-            
-            y += 25;
-            doc.setFontSize(9);
-            doc.setTextColor(60, 60, 60);
-            doc.setFont('helvetica', 'normal');
-            
-            const garantias = [
-                '30 días de soporte post-lanzamiento sin costo adicional',
-                '90 días de optimización de chatbot ilimitada',
-                'Uptime garantizado 99.9% con SLA',
-                'Soporte técnico prioritario vía email y WhatsApp',
-                'Reportes mensuales de performance y ROI'
-            ];
-            
-            garantias.forEach(g => {
-                if (y > 750) {
+                // Info cliente
+                doc.setTextColor(60, 60, 60);
+                doc.setFontSize(11);
+                let y = 130;
+                doc.text(`Fecha: ${proposalData.date}`, 40, y);
+                y += 20;
+                doc.text(`Cliente: ${proposalData.clientName}`, 40, y);
+                y += 20;
+                doc.text(`Empresa: ${proposalData.companyName}`, 40, y);
+                y += 20;
+                doc.text('Válida por: 30 días', 40, y);
+                
+                // Tabla resumen
+                y += 40;
+                doc.setFillColor(240, 240, 240);
+                doc.rect(40, y, 532, 125, 'F');
+                
+                doc.setFontSize(14);
+                doc.setTextColor(...brandCyan);
+                doc.text('Resumen de Inversión', 50, y + 25);
+                
+                doc.setFontSize(11);
+                doc.setTextColor(60, 60, 60);
+                doc.setFont('helvetica', 'normal');
+                
+                const col1 = 50;
+                const col2 = 450;
+                
+                y += 50;
+                doc.text('Subtotal Setup:', col1, y);
+                doc.text(`$${proposalData.subtotalSetup.toLocaleString()}`, col2, y);
+                
+                y += 20;
+                doc.text('Descuento aplicado:', col1, y);
+                doc.setTextColor(245, 158, 11);
+                doc.text(`-$${Math.round(proposalData.discount).toLocaleString()}`, col2, y);
+                
+                y += 25;
+                doc.setDrawColor(...brandCyan);
+                doc.setLineWidth(2);
+                doc.line(50, y, 550, y);
+                
+                y += 20;
+                doc.setTextColor(...brandCyan);
+                doc.setFont('helvetica', 'bold');
+                doc.text('TOTAL SETUP:', col1, y);
+                doc.text(`$${Math.round(proposalData.totalSetup).toLocaleString()}`, col2, y);
+                
+                y += 20;
+                doc.setTextColor(16, 185, 129);
+                doc.text('TOTAL MENSUAL:', col1, y);
+                doc.text(`$${proposalData.subtotalMonthly.toLocaleString()}/mes`, col2, y);
+                
+                // Servicios
+                y += 50;
+                doc.setTextColor(...brandCyan);
+                doc.setFontSize(14);
+                doc.text('Servicios Incluidos', 40, y);
+                
+                y += 30;
+                doc.setFontSize(10);
+                doc.setTextColor(60, 60, 60);
+                doc.setFont('helvetica', 'normal');
+                
+                proposalData.items.forEach((item) => {
+                    if (y > 720) {
+                        doc.addPage();
+                        y = 50;
+                    }
+                    
+                    doc.setDrawColor(0, 212, 255);
+                    doc.setLineWidth(1);
+                    doc.rect(40, y - 15, 532, 50);
+                    
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(item.name, 50, y);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(9);
+                    doc.setTextColor(100, 100, 100);
+                    doc.text(`Setup: $${item.setup.toLocaleString()} | Mensual: $${item.monthly.toLocaleString()}`, 50, y + 15);
+                    
+                    y += 70;
+                });
+                
+                // Condiciones
+                if (y > 650) {
                     doc.addPage();
                     y = 50;
                 }
-                doc.text('- ' + g, 40, y);
-                y += lineHeight;
-            });
-            
-            // Footer final
-            y += 30;
-            if (y > 680) {
-                doc.addPage();
-                y = 50;
-            }
-            
-            doc.setFillColor(...brandCyan);
-            doc.rect(40, y, 532, 80, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(14);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Listo para transformar tu negocio?', 306, y + 30, { align: 'center' });
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'normal');
-            doc.text('Contactanos para agendar el kickoff de tu proyecto', 306, y + 50, { align: 'center' });
-            doc.setFont('helvetica', 'bold');
-            doc.text('hola@iaagency.com', 306, y + 70, { align: 'center' });
-            
-            // Footer en todas las páginas (subido)
-            const pageCount = doc.internal.getNumberOfPages();
-            for (let i = 1; i <= pageCount; i++) {
-                doc.setPage(i);
-                doc.setFontSize(8);
-                doc.setTextColor(150, 150, 150);
-                doc.text(`IA Agency - Página ${i} de ${pageCount}`, 306, 770, { align: 'center' });
-            }
-            
-            doc.save(`Propuesta_IA_Agency_${proposalData.clientName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
-            showToast('✅ PDF descargado exitosamente');
+                
+                y += 20;
+                doc.setFillColor(240, 240, 240);
+                doc.rect(40, y, 532, 150, 'F');
+                
+                doc.setTextColor(...brandCyan);
+                doc.setFontSize(14);
+                doc.setFont('helvetica', 'bold');
+                doc.text('Condiciones Comerciales', 50, y + 25);
+                
+                doc.setFontSize(9);
+                doc.setTextColor(60, 60, 60);
+                doc.setFont('helvetica', 'normal');
+                
+                let condY = y + 50;
+                const lineHeight = 18;
+                
+                if (proposalData.discounts.upfront) {
+                    doc.text('Pago inicial: 100% para iniciar proyecto (aplica descuento del 10%)', 60, condY);
+                    condY += lineHeight;
+                } else {
+                    doc.text('Pago inicial: 40% para iniciar proyecto', 60, condY);
+                    condY += lineHeight;
+                    doc.text('Hitos de pago: 30% diseño aprobado, 20% testing, 10% lanzamiento', 60, condY);
+                    condY += lineHeight;
+                }
+                
+                if (proposalData.discounts.annual) {
+                    doc.text('Contrato mínimo: 12 meses (aplica descuento del 15% en setup)', 60, condY);
+                    condY += lineHeight;
+                    doc.text('Mantenimiento: Incluido en el contrato anual', 60, condY);
+                    condY += lineHeight;
+                } else {
+                    doc.text('Contrato mínimo: 6 meses de mantenimiento', 60, condY);
+                    condY += lineHeight;
+                }
+                
+                if (proposalData.discounts.return) {
+                    doc.text('Beneficio adicional: Cliente recurrente (-15% aplicado)', 60, condY);
+                    condY += lineHeight;
+                }
+                
+                doc.text('Tiempo estimado de entrega: 4-6 semanas hábiles', 60, condY);
+                condY += lineHeight;
+                doc.text('Forma de pago: Transferencia bancaria o tarjeta de crédito', 60, condY);
+                
+                // Garantías
+                y = condY + 40;
+                if (y > 700) {
+                    doc.addPage();
+                    y = 50;
+                }
+                
+                doc.setTextColor(...brandCyan);
+                doc.setFontSize(14);
+                doc.setFont('helvetica', 'bold');
+                doc.text('Garantías IA Agency', 40, y);
+                
+                y += 25;
+                doc.setFontSize(9);
+                doc.setTextColor(60, 60, 60);
+                doc.setFont('helvetica', 'normal');
+                
+                const garantias = [
+                    '30 días de soporte post-lanzamiento sin costo adicional',
+                    '90 días de optimización de chatbot ilimitada',
+                    'Uptime garantizado 99.9% con SLA',
+                    'Soporte técnico prioritario vía email y WhatsApp',
+                    'Reportes mensuales de performance y ROI'
+                ];
+                
+                garantias.forEach(g => {
+                    if (y > 750) {
+                        doc.addPage();
+                        y = 50;
+                    }
+                    doc.text('- ' + g, 40, y);
+                    y += lineHeight;
+                });
+                
+                // Footer final
+                y += 30;
+                if (y > 680) {
+                    doc.addPage();
+                    y = 50;
+                }
+                
+                doc.setFillColor(...brandCyan);
+                doc.rect(40, y, 532, 80, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(14);
+                doc.setFont('helvetica', 'bold');
+                doc.text('Listo para transformar tu negocio?', 306, y + 30, { align: 'center' });
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
+                doc.text('Contactanos para agendar el kickoff de tu proyecto', 306, y + 50, { align: 'center' });
+                doc.setFont('helvetica', 'bold');
+                doc.text('hola@iaagency.com', 306, y + 70, { align: 'center' });
+                
+                // Footer en todas las páginas
+                const pageCount = doc.internal.getNumberOfPages();
+                for (let i = 1; i <= pageCount; i++) {
+                    doc.setPage(i);
+                    doc.setFontSize(8);
+                    doc.setTextColor(150, 150, 150);
+                    doc.text(`IA Agency - Pagina ${i} de ${pageCount}`, 306, 770, { align: 'center' });
+                }
+                
+                doc.save(`Propuesta_IA_Agency_${proposalData.clientName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+                showToast('✅ PDF descargado (sin emojis)');
+            }, 100);
         }
 
         function resetAll() {
@@ -1259,7 +1387,7 @@
         }
 
         function exportToExcel() {
-            let csv = 'Código,Servicio,Tipo,Setup,Mensual\n';
+            let csv = 'Codigo,Servicio,Tipo,Setup,Mensual\n';
             
             document.querySelectorAll('.service-item').forEach(item => {
                 const code = item.dataset.code;

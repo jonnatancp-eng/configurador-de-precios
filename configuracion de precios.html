@@ -183,11 +183,16 @@
         .summary-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
         .summary-row.total { border-bottom: none; font-size: 1.3rem; font-weight: 800; color: var(--cyan); margin-top: 10px; padding-top: 20px; border-top: 2px solid var(--cyan); }
         .summary-row.monthly-total { border-bottom: none; font-size: 1.1rem; font-weight: 700; color: var(--green); }
+        
+        /* DESCUENTOS - VERSIÓN SIMPLIFICADA (SOLO VISUALIZACIÓN) */
         .discount-section { margin: 20px 0; padding: 16px; background: rgba(245, 158, 11, 0.1); border-radius: 8px; border: 1px solid var(--orange); }
-        .discount-title { font-weight: 700; color: var(--orange); margin-bottom: 10px; font-size: 0.9rem; }
+        .discount-title { font-weight: 700; color: var(--orange); margin-bottom: 12px; font-size: 0.9rem; }
         .discount-options { display: flex; flex-direction: column; gap: 8px; }
-        .discount-option { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; cursor: pointer; }
-        .discount-option input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--orange); }
+        .discount-option { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; cursor: pointer; padding: 4px 0; }
+        .discount-option:hover { opacity: 0.8; }
+        .discount-text { color: var(--text-primary); }
+        .discount-limit-display { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); font-size: 0.85rem; color: var(--text-secondary); }
+        
         .savings { color: var(--green); font-weight: 700; font-size: 0.9rem; margin-top: 10px; text-align: center; }
         .selected-items { margin-top: 20px; max-height: 200px; overflow-y: auto; }
         .selected-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: rgba(0, 212, 255, 0.1); border-radius: 6px; margin-bottom: 6px; font-size: 0.85rem; }
@@ -198,10 +203,11 @@
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0, 212, 255, 0.3); }
         .btn-secondary { background: transparent; border: 2px solid var(--border); color: var(--text-primary); }
         .btn-secondary:hover { border-color: var(--cyan); color: var(--cyan); }
-        .btn-warning { background: var(--orange); color: white; }
-        .btn-warning:hover { background: #d97706; }
         .btn-success { background: var(--green); color: white; }
         .btn-success:hover { background: #059669; }
+        .btn-warning { background: var(--orange); color: white; }
+        .btn-warning:hover { background: #d97706; }
+        .btn-small { padding: 8px 16px; font-size: 0.8rem; }
         
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
         .modal.active { display: flex; }
@@ -209,6 +215,14 @@
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .modal-title { font-size: 1.5rem; font-weight: 700; }
         .close-modal { background: none; border: none; color: var(--text-secondary); font-size: 1.5rem; cursor: pointer; }
+        
+        /* MODAL EDITOR DE DESCUENTOS */
+        #discountEditorModal .modal-content { max-width: 500px; }
+        .discount-editor-item { background: var(--bg-hover); padding: 15px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border); }
+        .discount-editor-item label { font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 5px; }
+        .editor-input { width: 100%; padding: 10px; background: var(--bg-dark); border: 1px solid var(--cyan); color: white; border-radius: 6px; font-size: 0.9rem; }
+        .editor-input:focus { outline: none; border-color: var(--purple); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2); }
+        .editor-input-small { width: 80px; text-align: center; }
         
         .export-options { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
         .export-option { 
@@ -269,17 +283,6 @@
             from { transform: translateX(400px); }
             to { transform: translateX(0); }
         }
-
-        .instructions-box {
-            background: rgba(0, 212, 255, 0.1);
-            border-left: 4px solid var(--cyan);
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 0 8px 8px 0;
-            font-size: 0.9rem;
-        }
-        .instructions-box ol { margin-left: 20px; }
-        .instructions-box li { margin-bottom: 8px; }
     </style>
 </head>
 <body>
@@ -287,17 +290,23 @@
         <div class="admin-panel" id="adminPanel">
             <div class="admin-title">
                 🔐 Panel de Control - Solo Personal Autorizado
-                <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem; margin-left: auto;" onclick="toggleAdminPanel()">Cerrar</button>
+                <button class="btn btn-secondary btn-small" style="margin-left: auto;" onclick="toggleAdminPanel()">Cerrar</button>
             </div>
             <div class="admin-grid">
-                <button class="btn btn-warning" onclick="toggleEditMode()">
-                    ✏️ ${editMode ? 'Desactivar' : 'Activar'} Edición de Precios
+                <button class="btn btn-warning btn-small" onclick="toggleEditMode()">
+                    ✏️ Editar Precios
                 </button>
-                <button class="btn btn-secondary" onclick="resetAllPrices()">
-                    🔄 Restaurar Precios Originales
+                <button class="btn btn-warning btn-small" onclick="openDiscountEditor()">
+                    🎯 Editar Descuentos
                 </button>
-                <button class="btn btn-secondary" onclick="exportToExcel()">
-                    📊 Exportar Precios a Excel
+                <button class="btn btn-secondary btn-small" onclick="resetAllPrices()">
+                    🔄 Restaurar Precios
+                </button>
+                <button class="btn btn-secondary btn-small" onclick="resetDiscountsToDefault()">
+                    🎯 Restaurar Descuentos
+                </button>
+                <button class="btn btn-secondary btn-small" onclick="exportToExcel()">
+                    📊 Exportar a Excel
                 </button>
             </div>
         </div>
@@ -328,10 +337,10 @@
                                 <div class="package-price" data-setup="3200" onclick="editPrice(event, this, 'setup')">$3,200</div>
                                 <div class="package-monthly" data-monthly="175" onclick="editPrice(event, this, 'monthly')">+$175/mes</div>
                                 <ul class="package-features">
-                                    <li>Sitio Web 5 pages</li>
+                                    <li>Landing Page Express</li>
                                     <li>Chatbot Web Básico</li>
                                     <li>Automatización Agendamiento</li>
-                                    <li>10 Flujos</li>
+                                    <li>Integración Calendar</li>
                                 </ul>
                             </div>
 
@@ -668,21 +677,14 @@
                         <span id="subtotal-monthly">$0/mes</span>
                     </div>
 
-                    <div class="discount-section">
+                    <!-- DESCUENTOS: SOLO VISUALIZACIÓN PARA USUARIOS -->
+                    <div class="discount-section" id="discountSection">
                         <div class="discount-title">🎯 Descuentos Aplicables</div>
-                        <div class="discount-options">
-                            <label class="discount-option">
-                                <input type="checkbox" id="discount-upfront" onchange="calculateTotal()">
-                                <span>Pago 100% anticipado (-7%)</span>
-                            </label>
-                            <label class="discount-option">
-                                <input type="checkbox" id="discount-annual" onchange="calculateTotal()">
-                                <span>Contrato 12 meses (-8% setup)</span>
-                            </label>
-                            <label class="discount-option">
-                                <input type="checkbox" id="discount-return" onchange="calculateTotal()">
-                                <span>Cliente recurrente (-15%)</span>
-                            </label>
+                        <div class="discount-options" id="discountOptions">
+                            <!-- Se genera dinámicamente -->
+                        </div>
+                        <div class="discount-limit-display">
+                            Límite máximo total: <span id="maxLimitDisplay" style="color: var(--orange); font-weight: bold;">30%</span>
                         </div>
                     </div>
 
@@ -715,6 +717,7 @@
         </div>
     </div>
 
+    <!-- MODAL: Exportar Propuesta -->
     <div class="modal" id="proposalModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -737,9 +740,41 @@
 
             <div class="preview-section" id="previewContent"></div>
             
-            <div style="display: flex; gap: 10px; margin-top: 20px;" id="modalActions">
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
                 <button class="btn btn-success" onclick="copyToClipboard()" style="flex: 1;">📋 Copiar al Portapapeles</button>
                 <button class="btn btn-secondary" onclick="closeModal()" style="flex: 1;">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Editor de Descuentos (SOLO ADMIN) -->
+    <div class="modal" id="discountEditorModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">🎯 Configurar Descuentos</div>
+                <button class="close-modal" onclick="closeDiscountEditor()">&times;</button>
+            </div>
+            
+            <div id="discountEditorContent" style="margin-bottom: 20px;">
+                <!-- Contenido editable se genera aquí -->
+            </div>
+            
+            <div style="background: rgba(245, 158, 11, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <label style="display: flex; align-items: center; gap: 10px; font-size: 0.9rem;">
+                    <span>Límite máximo total:</span>
+                    <input type="number" 
+                           id="editorMaxLimit" 
+                           class="editor-input editor-input-small" 
+                           value="30"
+                           min="1" 
+                           max="100">
+                    <span>%</span>
+                </label>
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-success" onclick="saveDiscountChanges()" style="flex: 1;">💾 Guardar Cambios</button>
+                <button class="btn btn-secondary" onclick="closeDiscountEditor()" style="flex: 1;">Cancelar</button>
             </div>
         </div>
     </div>
@@ -752,9 +787,19 @@
         let adminMode = false;
         let proposalData = null;
         const originalPrices = {};
-        let currentExportFormat = 'docs';
         
+        // CONFIGURACIÓN DE DESCUENTOS
+        const defaultDiscountConfig = {
+            upfront: { id: 'upfront', label: 'Pago 100% anticipado', percent: 10, checked: false },
+            annual: { id: 'annual', label: 'Contrato 12 meses', percent: 15, checked: false },
+            return: { id: 'return', label: 'Cliente recurrente', percent: 15, checked: false }
+        };
+        
+        let discountConfig = JSON.parse(JSON.stringify(defaultDiscountConfig));
+        let maxDiscountLimit = 30;
+
         document.addEventListener('DOMContentLoaded', function() {
+            // Guardar precios originales
             document.querySelectorAll('[data-setup], [data-monthly]').forEach(el => {
                 const key = el.closest('[data-code], [data-package]')?.dataset.code || 
                            el.closest('[data-package]')?.dataset.package || 'unknown';
@@ -763,6 +808,14 @@
                 if (el.dataset.monthly) originalPrices[key].monthly = el.dataset.monthly;
             });
             
+            // Cargar configuraciones guardadas
+            loadPricesFromStorage();
+            loadDiscountConfig();
+            
+            // Calcular totales iniciales
+            calculateTotal();
+            
+            // Atajo de teclado para admin
             document.addEventListener('keydown', function(e) {
                 if (e.ctrlKey && e.key === 'e') {
                     e.preventDefault();
@@ -771,6 +824,10 @@
             });
         });
 
+        // ==========================================
+        // PANEL DE ADMINISTRACIÓN
+        // ==========================================
+        
         function toggleAdminPanel() {
             adminMode = !adminMode;
             document.getElementById('adminPanel').classList.toggle('active', adminMode);
@@ -782,8 +839,199 @@
             editMode = !editMode;
             document.body.classList.toggle('edit-mode', editMode);
             showToast(editMode ? '✏️ Modo edición activado' : '✅ Modo edición desactivado');
-            const btn = event.target;
-            btn.textContent = editMode ? '✏️ Desactivar Edición' : '✏️ Activar Edición de Precios';
+        }
+
+        // ==========================================
+        // EDITOR DE DESCUENTOS (SOLO ADMIN)
+        // ==========================================
+        
+        function openDiscountEditor() {
+            const container = document.getElementById('discountEditorContent');
+            
+            container.innerHTML = Object.values(discountConfig).map((discount, index) => `
+                <div class="discount-editor-item">
+                    <div style="font-weight: bold; margin-bottom: 10px; color: var(--cyan);">Descuento #${index + 1}</div>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <div>
+                            <label>Descripción:</label>
+                            <input type="text" 
+                                   class="editor-input editor-field" 
+                                   data-id="${discount.id}"
+                                   data-field="label"
+                                   value="${discount.label}">
+                        </div>
+                        <div>
+                            <label>Porcentaje:</label>
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <input type="number" 
+                                       class="editor-input editor-input-small editor-field" 
+                                       data-id="${discount.id}"
+                                       data-field="percent"
+                                       value="${discount.percent}"
+                                       min="0" 
+                                       max="100">
+                                <span style="color: var(--text-secondary);">%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('editorMaxLimit').value = maxDiscountLimit;
+            document.getElementById('discountEditorModal').classList.add('active');
+        }
+
+        function closeDiscountEditor() {
+            document.getElementById('discountEditorModal').classList.remove('active');
+        }
+
+        function saveDiscountChanges() {
+            // Leer campos de descuentos
+            document.querySelectorAll('.editor-field').forEach(field => {
+                const id = field.dataset.id;
+                const fieldType = field.dataset.field;
+                
+                if (discountConfig[id]) {
+                    if (fieldType === 'label') {
+                        discountConfig[id].label = field.value.trim() || 'Sin nombre';
+                    } else if (fieldType === 'percent') {
+                        let percent = parseInt(field.value) || 0;
+                        discountConfig[id].percent = Math.max(0, Math.min(100, percent));
+                    }
+                }
+            });
+            
+            // Leer límite máximo
+            const limitInput = document.getElementById('editorMaxLimit');
+            maxDiscountLimit = Math.max(1, Math.min(100, parseInt(limitInput.value) || 30));
+            
+            // Guardar y actualizar
+            saveDiscountConfig();
+            renderDiscounts();
+            calculateTotal();
+            closeDiscountEditor();
+            showToast('💾 Descuentos actualizados correctamente');
+        }
+
+        function resetDiscountsToDefault() {
+            if (!confirm('¿Restaurar descuentos a valores predeterminados?')) return;
+            
+            discountConfig = JSON.parse(JSON.stringify(defaultDiscountConfig));
+            maxDiscountLimit = 30;
+            localStorage.removeItem('iaagency_discounts');
+            renderDiscounts();
+            calculateTotal();
+            showToast('✅ Descuentos restaurados a default');
+        }
+
+        // ==========================================
+        // VISUALIZACIÓN DE DESCUENTOS (USUARIO)
+        // ==========================================
+        
+        function renderDiscounts() {
+            const container = document.getElementById('discountOptions');
+            
+            container.innerHTML = Object.values(discountConfig).map(discount => `
+                <label class="discount-option">
+                    <input type="checkbox" 
+                           id="discount-${discount.id}" 
+                           ${discount.checked ? 'checked' : ''}
+                           onchange="toggleDiscount('${discount.id}')">
+                    <span class="discount-text">${discount.label} (-${discount.percent}%)</span>
+                </label>
+            `).join('');
+            
+            // Actualizar display del límite
+            document.getElementById('maxLimitDisplay').textContent = maxDiscountLimit + '%';
+        }
+
+        function toggleDiscount(id) {
+            if (discountConfig[id]) {
+                discountConfig[id].checked = !discountConfig[id].checked;
+                calculateTotal();
+            }
+        }
+
+        function saveDiscountConfig() {
+            const data = {
+                config: discountConfig,
+                maxLimit: maxDiscountLimit
+            };
+            localStorage.setItem('iaagency_discounts', JSON.stringify(data));
+        }
+
+        function loadDiscountConfig() {
+            const saved = localStorage.getItem('iaagency_discounts');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    if (parsed.config) {
+                        Object.keys(parsed.config).forEach(key => {
+                            if (discountConfig[key]) {
+                                discountConfig[key] = { ...discountConfig[key], ...parsed.config[key] };
+                            }
+                        });
+                    }
+                    if (parsed.maxLimit !== undefined) {
+                        maxDiscountLimit = parsed.maxLimit;
+                    }
+                } catch (e) {
+                    console.error('Error cargando descuentos:', e);
+                }
+            }
+            renderDiscounts();
+        }
+
+        // ==========================================
+        // PRECIOS Y STORAGE
+        // ==========================================
+        
+        function savePricesToStorage() {
+            const prices = {};
+            document.querySelectorAll('[data-setup], [data-monthly]').forEach(el => {
+                const key = el.closest('[data-code], [data-package]')?.dataset.code || 
+                           el.closest('[data-package]')?.dataset.package;
+                if (key) {
+                    if (!prices[key]) prices[key] = {};
+                    if (el.dataset.setup) prices[key].setup = el.dataset.setup;
+                    if (el.dataset.monthly) prices[key].monthly = el.dataset.monthly;
+                }
+            });
+            localStorage.setItem('iaagency_prices', JSON.stringify(prices));
+        }
+
+        function loadPricesFromStorage() {
+            const saved = localStorage.getItem('iaagency_prices');
+            if (!saved) return false;
+            
+            try {
+                const prices = JSON.parse(saved);
+                let loadedCount = 0;
+                
+                document.querySelectorAll('[data-setup], [data-monthly]').forEach(el => {
+                    const key = el.closest('[data-code], [data-package]')?.dataset.code || 
+                               el.closest('[data-package]')?.dataset.package;
+                    
+                    if (key && prices[key]) {
+                        if (el.dataset.setup && prices[key].setup) {
+                            el.dataset.setup = prices[key].setup;
+                            el.textContent = `$${parseInt(prices[key].setup).toLocaleString()}`;
+                            loadedCount++;
+                        }
+                        if (el.dataset.monthly && prices[key].monthly) {
+                            el.dataset.monthly = prices[key].monthly;
+                            const val = parseInt(prices[key].monthly);
+                            el.textContent = val === 0 ? 'Sin mensual' : `+$${val.toLocaleString()}/mes`;
+                        }
+                    }
+                });
+                
+                if (loadedCount > 0) showToast('📂 Precios personalizados cargados');
+                return true;
+            } catch (e) {
+                console.error('Error cargando precios:', e);
+            }
+            return false;
         }
 
         function editPrice(event, element, type) {
@@ -800,14 +1048,18 @@
             const saveEdit = () => {
                 const newValue = input.value || '0';
                 element.dataset[type] = newValue;
-                element.textContent = type === 'setup' ? `$${parseInt(newValue).toLocaleString()}` : `+$${parseInt(newValue).toLocaleString()}/mes`;
+                element.textContent = type === 'setup' 
+                    ? `$${parseInt(newValue).toLocaleString()}` 
+                    : `+$${parseInt(newValue).toLocaleString()}/mes`;
                 if (type === 'monthly' && newValue === '0') element.textContent = 'Sin mensual';
+                
                 calculateTotal();
-                showToast('💾 Precio actualizado');
+                savePricesToStorage();
+                showToast('💾 Precio actualizado y guardado');
             };
             
             input.onblur = saveEdit;
-            input.onkeydown = (e) => { if (e.key === 'Enter') { input.blur(); } };
+            input.onkeydown = (e) => { if (e.key === 'Enter') input.blur(); };
             
             element.textContent = '';
             element.appendChild(input);
@@ -815,6 +1067,35 @@
             input.select();
         }
 
+        function resetAllPrices() {
+            if (!confirm('¿Restaurar todos los precios a valores originales?')) return;
+            
+            localStorage.removeItem('iaagency_prices');
+            
+            document.querySelectorAll('[data-setup], [data-monthly]').forEach(el => {
+                const key = el.closest('[data-code], [data-package]')?.dataset.code || 
+                           el.closest('[data-package]')?.dataset.package;
+                if (key && originalPrices[key]) {
+                    if (el.dataset.setup && originalPrices[key].setup) {
+                        el.dataset.setup = originalPrices[key].setup;
+                        el.textContent = `$${parseInt(originalPrices[key].setup).toLocaleString()}`;
+                    }
+                    if (el.dataset.monthly && originalPrices[key].monthly) {
+                        el.dataset.monthly = originalPrices[key].monthly;
+                        const val = parseInt(originalPrices[key].monthly);
+                        el.textContent = val === 0 ? 'Sin mensual' : `+$${val.toLocaleString()}/mes`;
+                    }
+                }
+            });
+            
+            calculateTotal();
+            showToast('✅ Precios originales restaurados');
+        }
+
+        // ==========================================
+        // NAVEGACIÓN Y SELECCIÓN
+        // ==========================================
+        
         function switchTab(tabName) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -845,6 +1126,10 @@
             return parseInt(element.dataset[type]) || 0;
         }
 
+        // ==========================================
+        // CÁLCULOS
+        // ==========================================
+        
         function calculateTotal() {
             let setupTotal = 0;
             let monthlyTotal = 0;
@@ -878,28 +1163,27 @@
                 });
             }
             
-            const discounts = {
-                upfront: document.getElementById('discount-upfront').checked,
-                annual: document.getElementById('discount-annual').checked,
-                return: document.getElementById('discount-return').checked
-            };
+            // Calcular descuento
+            let totalDiscountPercent = 0;
+            Object.values(discountConfig).forEach(d => {
+                if (d.checked) totalDiscountPercent += d.percent;
+            });
             
-            let discount = 0;
-            if (discounts.upfront) discount += setupTotal * 0.08;
-            if (discounts.annual) discount += setupTotal * 0.07;
-            if (discounts.return) discount += setupTotal * 0.10;
-            discount = Math.min(discount, setupTotal * 0.20);
+            const appliedDiscountPercent = Math.min(totalDiscountPercent, maxDiscountLimit);
+            const discountAmount = setupTotal * (appliedDiscountPercent / 100);
+            const finalSetup = setupTotal - discountAmount;
             
-            const finalSetup = setupTotal - discount;
-            
+            // Actualizar DOM
             document.getElementById('subtotal-setup').textContent = '$' + setupTotal.toLocaleString();
             document.getElementById('subtotal-monthly').textContent = '$' + monthlyTotal.toLocaleString() + '/mes';
-            document.getElementById('discount-amount').textContent = '-$' + Math.round(discount).toLocaleString();
+            document.getElementById('discount-amount').textContent = '-$' + Math.round(discountAmount).toLocaleString() + ` (${appliedDiscountPercent}%)`;
             document.getElementById('total-setup').textContent = '$' + Math.round(finalSetup).toLocaleString();
             document.getElementById('total-monthly').textContent = '$' + monthlyTotal.toLocaleString() + '/mes';
             
             const savingsText = document.getElementById('savings-text');
-            savingsText.textContent = discount > 0 ? `💚 Ahorras $${Math.round(discount).toLocaleString()} (${Math.round((discount/setupTotal)*100)}%)` : '';
+            savingsText.textContent = appliedDiscountPercent > 0 
+                ? `💚 Ahorras $${Math.round(discountAmount).toLocaleString()} (${appliedDiscountPercent}%)` 
+                : '';
             
             updateSelectedList(selectedItems);
             
@@ -907,9 +1191,11 @@
                 items: selectedItems,
                 subtotalSetup: setupTotal,
                 subtotalMonthly: monthlyTotal,
-                discount: discount,
+                discount: discountAmount,
+                discountPercent: appliedDiscountPercent,
                 totalSetup: finalSetup,
-                discounts: discounts,
+                discounts: discountConfig,
+                maxLimit: maxDiscountLimit,
                 date: new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })
             };
         }
@@ -928,6 +1214,10 @@
             `).join('');
         }
 
+        // ==========================================
+        // GENERACIÓN DE PROPUESTA
+        // ==========================================
+        
         function generateProposal() {
             if (!proposalData || proposalData.totalSetup === 0) {
                 showToast('❌ Selecciona servicios primero');
@@ -940,30 +1230,29 @@
             proposalData.clientName = clientName;
             proposalData.companyName = companyName;
             
-            updatePreview('docs');
+            updatePreview();
             document.getElementById('proposalModal').classList.add('active');
         }
 
-        function generateHTMLContent(format = 'docs') {
-            const conditions = generateDynamicConditions(proposalData.discounts, format);
-            const emoji = (e) => format === 'pdf' ? '' : e; // Sin emojis para PDF
+        function generateHTMLContent() {
+            const conditions = generateDynamicConditions();
             
             return `
                 <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6; max-width: 800px; margin: 0 auto;">
                     <div style="text-align: center; margin-bottom: 30px; padding: 30px; background: linear-gradient(135deg, #00d4ff, #8b5cf6); color: white; border-radius: 12px;">
-                        <h1 style="margin: 0; font-size: 32px; font-weight: bold;">${emoji('🚀')} IA AGENCY</h1>
+                        <h1 style="margin: 0; font-size: 32px; font-weight: bold;">🚀 IA AGENCY</h1>
                         <p style="margin: 10px 0 0 0; opacity: 0.9; font-size: 18px;">Propuesta Comercial</p>
                     </div>
                     
                     <div style="margin-bottom: 25px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
-                        <p style="margin: 5px 0;"><strong>${emoji('📅')} Fecha:</strong> ${proposalData.date}</p>
-                        <p style="margin: 5px 0;"><strong>${emoji('👤')} Cliente:</strong> ${proposalData.clientName}</p>
-                        <p style="margin: 5px 0;"><strong>${emoji('🏢')} Empresa:</strong> ${proposalData.companyName}</p>
-                        <p style="margin: 5px 0;"><strong>${emoji('⏱️')} Válida por:</strong> 30 días</p>
+                        <p style="margin: 5px 0;"><strong>📅 Fecha:</strong> ${proposalData.date}</p>
+                        <p style="margin: 5px 0;"><strong>👤 Cliente:</strong> ${proposalData.clientName}</p>
+                        <p style="margin: 5px 0;"><strong>🏢 Empresa:</strong> ${proposalData.companyName}</p>
+                        <p style="margin: 5px 0;"><strong>⏱️ Válida por:</strong> 30 días</p>
                     </div>
                     
                     <div style="background: #f0f9ff; padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid #00d4ff;">
-                        <h3 style="color: #00d4ff; margin-top: 0; font-size: 20px;">${emoji('💰')} Resumen de Inversión</h3>
+                        <h3 style="color: #00d4ff; margin-top: 0; font-size: 20px;">💰 Resumen de Inversión</h3>
                         <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
                             <tr>
                                 <td style="padding: 10px 0; border-bottom: 1px solid #ddd; font-size: 16px;">Subtotal Setup:</td>
@@ -971,7 +1260,7 @@
                             </tr>
                             <tr>
                                 <td style="padding: 10px 0; border-bottom: 1px solid #ddd; font-size: 16px;">Descuento aplicado:</td>
-                                <td style="text-align: right; color: #f59e0b; font-weight: bold; font-size: 16px; border-bottom: 1px solid #ddd;">-$${Math.round(proposalData.discount).toLocaleString()}</td>
+                                <td style="text-align: right; color: #f59e0b; font-weight: bold; font-size: 16px; border-bottom: 1px solid #ddd;">-$${Math.round(proposalData.discount).toLocaleString()} (${proposalData.discountPercent}%)</td>
                             </tr>
                             <tr style="font-size: 20px; color: #00d4ff;">
                                 <td style="padding: 15px 0 10px 0; border-top: 3px solid #00d4ff; font-weight: bold;">TOTAL SETUP:</td>
@@ -985,7 +1274,7 @@
                     </div>
                     
                     <div style="margin-bottom: 25px;">
-                        <h3 style="color: #00d4ff; font-size: 20px; margin-bottom: 15px;">${emoji('🛠️')} Servicios Incluidos</h3>
+                        <h3 style="color: #00d4ff; font-size: 20px; margin-bottom: 15px;">🛠️ Servicios Incluidos</h3>
                         <div style="display: flex; flex-direction: column; gap: 10px;">
                             ${proposalData.items.map(item => `
                                 <div style="padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #00d4ff;">
@@ -997,14 +1286,14 @@
                     </div>
                     
                     <div style="background: #fef3c7; padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid #f59e0b;">
-                        <h3 style="color: #d97706; margin-top: 0; font-size: 20px;">${emoji('📋')} Condiciones Comerciales</h3>
+                        <h3 style="color: #d97706; margin-top: 0; font-size: 20px;">📋 Condiciones Comerciales</h3>
                         <div style="color: #92400e; line-height: 1.8;">
                             ${conditions}
                         </div>
                     </div>
                     
                     <div style="margin-bottom: 25px;">
-                        <h3 style="color: #00d4ff; font-size: 20px; margin-bottom: 15px;">${emoji('✅')} Garantías IA Agency</h3>
+                        <h3 style="color: #00d4ff; font-size: 20px; margin-bottom: 15px;">✅ Garantías IA Agency</h3>
                         <ul style="line-height: 2; padding-left: 20px; color: #374151;">
                             <li>30 días de soporte post-lanzamiento sin costo adicional</li>
                             <li>90 días de optimización de chatbot ilimitada</li>
@@ -1015,9 +1304,9 @@
                     </div>
                     
                     <div style="background: linear-gradient(135deg, #00d4ff, #8b5cf6); color: white; padding: 30px; border-radius: 12px; text-align: center; margin-top: 30px;">
-                        <h3 style="margin-top: 0; font-size: 22px; margin-bottom: 10px;">${emoji('🎯')} ¿Listo para transformar tu negocio?</h3>
+                        <h3 style="margin-top: 0; font-size: 22px; margin-bottom: 10px;">🎯 ¿Listo para transformar tu negocio?</h3>
                         <p style="margin: 0 0 15px 0; font-size: 16px; opacity: 0.95;">Contáctanos para agendar el kickoff de tu proyecto</p>
-                        <p style="margin: 0; font-size: 18px; font-weight: bold;">${emoji('📧')} hola@iaagency.com</p>
+                        <p style="margin: 0; font-size: 18px; font-weight: bold;">📧 hola@iaagency.com</p>
                         <p style="margin: 15px 0 0 0; font-size: 14px; opacity: 0.9;">IA Agency - Automatización Inteligente para Negocios</p>
                     </div>
                     
@@ -1028,57 +1317,56 @@
             `;
         }
 
-        function generateDynamicConditions(discounts, format = 'docs') {
-            const emoji = (e) => format === 'pdf' ? '' : e;
+        function generateDynamicConditions() {
             let html = '';
+            const activeDiscounts = Object.values(discountConfig).filter(d => d.checked);
+            const isUpfront = activeDiscounts.some(d => d.id === 'upfront');
+            const isAnnual = activeDiscounts.some(d => d.id === 'annual');
             
-            if (discounts.upfront) {
-                html += `<p style="margin: 8px 0;"><strong>${emoji('💳')} Pago inicial:</strong> 100% para iniciar proyecto (aplica descuento del 10%)</p>`;
+            if (isUpfront) {
+                const d = activeDiscounts.find(x => x.id === 'upfront');
+                html += `<p style="margin: 8px 0;"><strong>💳 Pago inicial:</strong> 100% para iniciar (descuento ${d.percent}%)</p>`;
             } else {
-                html += `<p style="margin: 8px 0;"><strong>${emoji('💳')} Pago inicial:</strong> 40% para iniciar proyecto</p>`;
-                html += `<p style="margin: 8px 0;"><strong>${emoji('📊')} Hitos de pago:</strong> 30% diseño aprobado, 20% testing, 10% lanzamiento</p>`;
+                html += `<p style="margin: 8px 0;"><strong>💳 Pago inicial:</strong> 40% para iniciar</p>`;
+                html += `<p style="margin: 8px 0;"><strong>📊 Hitos:</strong> 30% diseño, 20% testing, 10% lanzamiento</p>`;
             }
             
-            if (discounts.annual) {
-                html += `<p style="margin: 8px 0;"><strong>${emoji('📅')} Contrato mínimo:</strong> 12 meses (aplica descuento del 15% en setup)</p>`;
-                html += `<p style="margin: 8px 0;"><strong>${emoji('🔧')} Mantenimiento:</strong> Incluido en el contrato anual</p>`;
+            if (isAnnual) {
+                const d = activeDiscounts.find(x => x.id === 'annual');
+                html += `<p style="margin: 8px 0;"><strong>📅 Contrato:</strong> 12 meses (descuento ${d.percent}%)</p>`;
             } else {
-                html += `<p style="margin: 8px 0;"><strong>${emoji('📅')} Contrato mínimo:</strong> 6 meses de mantenimiento</p>`;
+                html += `<p style="margin: 8px 0;"><strong>📅 Contrato:</strong> 6 meses mínimo</p>`;
             }
             
-            if (discounts.return) {
-                html += `<p style="margin: 8px 0;"><strong>${emoji('⭐')} Beneficio adicional:</strong> Cliente recurrente (-15% aplicado)</p>`;
-            }
+            activeDiscounts.forEach(d => {
+                if (d.id !== 'upfront' && d.id !== 'annual') {
+                    html += `<p style="margin: 8px 0;"><strong>⭐ ${d.label}:</strong> ${d.percent}% descuento</p>`;
+                }
+            });
             
-            html += `<p style="margin: 8px 0;"><strong>${emoji('⏱️')} Tiempo estimado de entrega:</strong> 4-6 semanas hábiles</p>`;
-            html += `<p style="margin: 8px 0;"><strong>${emoji('💰')} Forma de pago:</strong> Transferencia bancaria o tarjeta de crédito</p>`;
+            html += `<p style="margin: 8px 0;"><strong>⏱️ Entrega:</strong> 4-6 semanas hábiles</p>`;
+            html += `<p style="margin: 8px 0;"><strong>💰 Pago:</strong> Transferencia o tarjeta</p>`;
             
             return html;
         }
 
-            function updatePreview(format) {
-                currentExportFormat = format;
-                const previewHTML = generateHTMLContent(format);
-                document.getElementById('previewContent').innerHTML = previewHTML;
+        function updatePreview() {
+            document.getElementById('previewContent').innerHTML = generateHTMLContent();
         }
 
         function exportToGoogleDocs() {
-            document.querySelectorAll('.export-option').forEach(el => el.classList.remove('recommended'));
-            event.currentTarget.classList.add('recommended');
-            updatePreview('docs');
-            showToast('📝 Modo Google Docs activado. Copia y pega en Docs.');
+            showToast('📝 Selecciona "Copiar al Portapapeles" y pega en Google Docs');
         }
 
         function downloadHTML() {
-            const htmlContent = `
-<!DOCTYPE html>
+            const htmlContent = `<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Propuesta IA Agency - ${proposalData.clientName}</title>
 </head>
 <body style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px;">
-    ${generateHTMLContent('docs')}
+    ${generateHTMLContent()}
 </body>
 </html>`;
             
@@ -1094,273 +1382,28 @@
             const content = document.getElementById('previewContent').innerHTML;
             
             try {
-                // Crear un blob HTML para copiar con formato
                 const blob = new Blob([content], { type: 'text/html' });
                 const clipboardItem = new ClipboardItem({ 'text/html': blob });
                 await navigator.clipboard.write([clipboardItem]);
-                showToast('✅ Copiado al portapapeles. Pega en Google Docs (Ctrl+V)');
+                showToast('✅ Copiado. Pega en Google Docs (Ctrl+V)');
             } catch (err) {
-                // Fallback: copiar como texto plano
-                const textContent = document.getElementById('previewContent').innerText;
-                await navigator.clipboard.writeText(textContent);
-                showToast('✅ Copiado como texto. Pega en Google Docs.');
+                await navigator.clipboard.writeText(document.getElementById('previewContent').innerText);
+                showToast('✅ Copiado como texto');
             }
         }
 
-        async function downloadPDF() {
-            updatePreview('pdf');
-            
-            // Pequeña espera para que se actualice la vista previa
-            setTimeout(async () => {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF('p', 'pt', 'letter');
-                
-                const brandCyan = [0, 212, 255];
-                const brandPurple = [139, 92, 246];
-                
-                // Header
-                doc.setFillColor(...brandCyan);
-                doc.rect(0, 0, 612, 100, 'F');
-                
-                doc.setTextColor(255, 255, 255);
-                doc.setFontSize(32);
-                doc.setFont('helvetica', 'bold');
-                doc.text('IA AGENCY', 306, 50, { align: 'center' });
-                doc.setFontSize(14);
-                doc.text('Propuesta Comercial', 306, 75, { align: 'center' });
-                
-                // Info cliente
-                doc.setTextColor(60, 60, 60);
-                doc.setFontSize(11);
-                let y = 130;
-                doc.text(`Fecha: ${proposalData.date}`, 40, y);
-                y += 20;
-                doc.text(`Cliente: ${proposalData.clientName}`, 40, y);
-                y += 20;
-                doc.text(`Empresa: ${proposalData.companyName}`, 40, y);
-                y += 20;
-                doc.text('Válida por: 30 días', 40, y);
-                
-                // Tabla resumen
-                y += 40;
-                doc.setFillColor(240, 240, 240);
-                doc.rect(40, y, 532, 125, 'F');
-                
-                doc.setFontSize(14);
-                doc.setTextColor(...brandCyan);
-                doc.text('Resumen de Inversión', 50, y + 25);
-                
-                doc.setFontSize(11);
-                doc.setTextColor(60, 60, 60);
-                doc.setFont('helvetica', 'normal');
-                
-                const col1 = 50;
-                const col2 = 450;
-                
-                y += 50;
-                doc.text('Subtotal Setup:', col1, y);
-                doc.text(`$${proposalData.subtotalSetup.toLocaleString()}`, col2, y);
-                
-                y += 20;
-                doc.text('Descuento aplicado:', col1, y);
-                doc.setTextColor(245, 158, 11);
-                doc.text(`-$${Math.round(proposalData.discount).toLocaleString()}`, col2, y);
-                
-                y += 25;
-                doc.setDrawColor(...brandCyan);
-                doc.setLineWidth(2);
-                doc.line(50, y, 550, y);
-                
-                y += 20;
-                doc.setTextColor(...brandCyan);
-                doc.setFont('helvetica', 'bold');
-                doc.text('TOTAL SETUP:', col1, y);
-                doc.text(`$${Math.round(proposalData.totalSetup).toLocaleString()}`, col2, y);
-                
-                y += 20;
-                doc.setTextColor(16, 185, 129);
-                doc.text('TOTAL MENSUAL:', col1, y);
-                doc.text(`$${proposalData.subtotalMonthly.toLocaleString()}/mes`, col2, y);
-                
-                // Servicios
-                y += 50;
-                doc.setTextColor(...brandCyan);
-                doc.setFontSize(14);
-                doc.text('Servicios Incluidos', 40, y);
-                
-                y += 30;
-                doc.setFontSize(10);
-                doc.setTextColor(60, 60, 60);
-                doc.setFont('helvetica', 'normal');
-                
-                proposalData.items.forEach((item) => {
-                    if (y > 720) {
-                        doc.addPage();
-                        y = 50;
-                    }
-                    
-                    doc.setDrawColor(0, 212, 255);
-                    doc.setLineWidth(1);
-                    doc.rect(40, y - 15, 532, 50);
-                    
-                    doc.setFont('helvetica', 'bold');
-                    doc.text(item.name, 50, y);
-                    doc.setFont('helvetica', 'normal');
-                    doc.setFontSize(9);
-                    doc.setTextColor(100, 100, 100);
-                    doc.text(`Setup: $${item.setup.toLocaleString()} | Mensual: $${item.monthly.toLocaleString()}`, 50, y + 15);
-                    
-                    y += 70;
-                });
-                
-                // Condiciones
-                if (y > 650) {
-                    doc.addPage();
-                    y = 50;
-                }
-                
-                y += 20;
-                doc.setFillColor(240, 240, 240);
-                doc.rect(40, y, 532, 150, 'F');
-                
-                doc.setTextColor(...brandCyan);
-                doc.setFontSize(14);
-                doc.setFont('helvetica', 'bold');
-                doc.text('Condiciones Comerciales', 50, y + 25);
-                
-                doc.setFontSize(9);
-                doc.setTextColor(60, 60, 60);
-                doc.setFont('helvetica', 'normal');
-                
-                let condY = y + 50;
-                const lineHeight = 18;
-                
-                if (proposalData.discounts.upfront) {
-                    doc.text('Pago inicial: 100% para iniciar proyecto (aplica descuento del 10%)', 60, condY);
-                    condY += lineHeight;
-                } else {
-                    doc.text('Pago inicial: 40% para iniciar proyecto', 60, condY);
-                    condY += lineHeight;
-                    doc.text('Hitos de pago: 30% diseño aprobado, 20% testing, 10% lanzamiento', 60, condY);
-                    condY += lineHeight;
-                }
-                
-                if (proposalData.discounts.annual) {
-                    doc.text('Contrato mínimo: 12 meses (aplica descuento del 15% en setup)', 60, condY);
-                    condY += lineHeight;
-                    doc.text('Mantenimiento: Incluido en el contrato anual', 60, condY);
-                    condY += lineHeight;
-                } else {
-                    doc.text('Contrato mínimo: 6 meses de mantenimiento', 60, condY);
-                    condY += lineHeight;
-                }
-                
-                if (proposalData.discounts.return) {
-                    doc.text('Beneficio adicional: Cliente recurrente (-15% aplicado)', 60, condY);
-                    condY += lineHeight;
-                }
-                
-                doc.text('Tiempo estimado de entrega: 4-6 semanas hábiles', 60, condY);
-                condY += lineHeight;
-                doc.text('Forma de pago: Transferencia bancaria o tarjeta de crédito', 60, condY);
-                
-                // Garantías
-                y = condY + 40;
-                if (y > 700) {
-                    doc.addPage();
-                    y = 50;
-                }
-                
-                doc.setTextColor(...brandCyan);
-                doc.setFontSize(14);
-                doc.setFont('helvetica', 'bold');
-                doc.text('Garantías IA Agency', 40, y);
-                
-                y += 25;
-                doc.setFontSize(9);
-                doc.setTextColor(60, 60, 60);
-                doc.setFont('helvetica', 'normal');
-                
-                const garantias = [
-                    '30 días de soporte post-lanzamiento sin costo adicional',
-                    '90 días de optimización de chatbot ilimitada',
-                    'Uptime garantizado 99.9% con SLA',
-                    'Soporte técnico prioritario vía email y WhatsApp',
-                    'Reportes mensuales de performance y ROI'
-                ];
-                
-                garantias.forEach(g => {
-                    if (y > 750) {
-                        doc.addPage();
-                        y = 50;
-                    }
-                    doc.text('- ' + g, 40, y);
-                    y += lineHeight;
-                });
-                
-                // Footer final
-                y += 30;
-                if (y > 680) {
-                    doc.addPage();
-                    y = 50;
-                }
-                
-                doc.setFillColor(...brandCyan);
-                doc.rect(40, y, 532, 80, 'F');
-                doc.setTextColor(255, 255, 255);
-                doc.setFontSize(14);
-                doc.setFont('helvetica', 'bold');
-                doc.text('Listo para transformar tu negocio?', 306, y + 30, { align: 'center' });
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'normal');
-                doc.text('Contactanos para agendar el kickoff de tu proyecto', 306, y + 50, { align: 'center' });
-                doc.setFont('helvetica', 'bold');
-                doc.text('hola@iaagency.com', 306, y + 70, { align: 'center' });
-                
-                // Footer en todas las páginas
-                const pageCount = doc.internal.getNumberOfPages();
-                for (let i = 1; i <= pageCount; i++) {
-                    doc.setPage(i);
-                    doc.setFontSize(8);
-                    doc.setTextColor(150, 150, 150);
-                    doc.text(`IA Agency - Pagina ${i} de ${pageCount}`, 306, 770, { align: 'center' });
-                }
-                
-                doc.save(`Propuesta_IA_Agency_${proposalData.clientName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
-                showToast('✅ PDF descargado (sin emojis)');
-            }, 100);
+        function closeModal() {
+            document.getElementById('proposalModal').classList.remove('active');
         }
 
         function resetAll() {
             currentPackage = null;
             document.querySelectorAll('.service-item').forEach(item => item.classList.remove('selected'));
             document.querySelectorAll('.package-card').forEach(card => card.classList.remove('selected'));
-            document.querySelectorAll('.discount-option input').forEach(cb => cb.checked = false);
+            Object.keys(discountConfig).forEach(key => discountConfig[key].checked = false);
+            renderDiscounts();
             calculateTotal();
             showToast('🔄 Configuración reiniciada');
-        }
-
-        function resetAllPrices() {
-            if (!confirm('¿Restaurar todos los precios a valores originales?')) return;
-            
-            document.querySelectorAll('[data-setup], [data-monthly]').forEach(el => {
-                const key = el.closest('[data-code], [data-package]')?.dataset.code || 
-                           el.closest('[data-package]')?.dataset.package;
-                if (key && originalPrices[key]) {
-                    if (el.dataset.setup && originalPrices[key].setup) {
-                        el.dataset.setup = originalPrices[key].setup;
-                        el.textContent = `$${parseInt(originalPrices[key].setup).toLocaleString()}`;
-                    }
-                    if (el.dataset.monthly && originalPrices[key].monthly) {
-                        el.dataset.monthly = originalPrices[key].monthly;
-                        const val = parseInt(originalPrices[key].monthly);
-                        el.textContent = val === 0 ? 'Sin mensual' : `+$${val.toLocaleString()}/mes`;
-                    }
-                }
-            });
-            
-            calculateTotal();
-            showToast('✅ Precios originales restaurados');
         }
 
         function exportToExcel() {
@@ -1390,10 +1433,6 @@
             showToast('✅ Exportado a Excel');
         }
 
-        function closeModal() {
-            document.getElementById('proposalModal').classList.remove('active');
-        }
-
         function showToast(message) {
             const toast = document.getElementById('toast');
             toast.textContent = message;
@@ -1401,8 +1440,13 @@
             setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
+        // Cerrar modales al hacer click fuera
         document.getElementById('proposalModal').addEventListener('click', function(e) {
             if (e.target === this) closeModal();
+        });
+        
+        document.getElementById('discountEditorModal').addEventListener('click', function(e) {
+            if (e.target === this) closeDiscountEditor();
         });
     </script>
 </body>
